@@ -1,10 +1,23 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSwipeable } from "react-swipeable";
 import YouTube, { YouTubeProps } from "react-youtube";
 
-const VideoItem = ({ videoId, isActive, isPlaying, togglePlay }) => {
-  const playerRef = useRef(null);
+interface VideoItemProps {
+  videoId: string;
+  isActive: boolean;
+  isPlaying: boolean;
+  togglePlay: (playerRef: React.RefObject<unknown>) => void;
+}
+
+const VideoItem = ({
+  videoId,
+  isActive,
+  isPlaying,
+  togglePlay,
+}: VideoItemProps) => {
+  const playerRef = useRef<unknown>(null);
 
   const opts = {
     playerVars: {
@@ -21,7 +34,7 @@ const VideoItem = ({ videoId, isActive, isPlaying, togglePlay }) => {
   const onPlayerReady: YouTubeProps["onReady"] = (event) => {
     playerRef.current = event.target;
     if (isPlaying) {
-      playerRef.current.playVideo();
+      (playerRef.current as any).playVideo();
     }
     // event.target.mute(); // Mute video để tránh bị chặn autoplay
     // event.target.playVideo(); // Phát video ngay khi load
@@ -30,8 +43,8 @@ const VideoItem = ({ videoId, isActive, isPlaying, togglePlay }) => {
   // Khi video kết thúc, tự động phát lại
   const onEnd = () => {
     if (playerRef.current) {
-      playerRef.current.seekTo(0); // Quay lại đầu video
-      playerRef.current.playVideo(); // Phát lại
+      (playerRef.current as any).seekTo(0); // Quay lại đầu video
+      (playerRef.current as any).playVideo(); // Phát lại
     }
   };
 
@@ -66,7 +79,7 @@ export default function Home() {
 
   // Vuốt lên/xuống để chuyển video
   const handleSwipe = useCallback(
-    (direction) => {
+    (direction: string) => {
       let newIndex = currentIndex;
       if (direction === "up" && currentIndex < videos.length - 1) {
         newIndex = currentIndex + 1;
@@ -84,7 +97,7 @@ export default function Home() {
 
   // Xử lý cuộn chuột
   const handleWheel = useCallback(
-    (event) => {
+    (event: { deltaY: number }) => {
       if (event.deltaY > 0) {
         handleSwipe("up");
       } else if (event.deltaY < 0) {
@@ -97,12 +110,12 @@ export default function Home() {
   useEffect(() => {
     const container = document.querySelector(".swipe-container");
     if (container) {
-      container.addEventListener("wheel", handleWheel);
+      (container as any).addEventListener("wheel", handleWheel);
     }
 
     return () => {
       if (container) {
-        container.removeEventListener("wheel", handleWheel);
+        (container as any).removeEventListener("wheel", handleWheel);
       }
     };
   }, [handleWheel]);
@@ -115,18 +128,18 @@ export default function Home() {
   });
 
   // Nhấn vào màn hình để tạm dừng hoặc phát video
-  const togglePlay = (playerRef) => {
+  const togglePlay = (playerRef: React.RefObject<unknown>) => {
     if (playerRef.current) {
       if (isPlaying) {
-        playerRef.current.pauseVideo(); // Dừng video
+        (playerRef.current as any).pauseVideo(); // Dừng video
       } else {
-        playerRef.current.playVideo(); // Phát video
+        (playerRef.current as any).playVideo(); // Phát video
       }
       setIsPlaying(!isPlaying);
     }
   };
   const shouldPreload = useCallback(
-    (index) => Math.abs(index - currentIndex) <= 1,
+    (index: number) => Math.abs(index - currentIndex) <= 1,
     [currentIndex]
   );
   return (
